@@ -1,40 +1,27 @@
-from random import *
-
-print("Opciones: piedra, papel, tijeras, lagarto, spock")
-
-jugador = 0
-maquina = 0
-
-while jugador < 5 and maquina < 5:
-    eleccion = input("Tu elección: ")
-    pc = choice(["piedra","papel","tijeras","lagarto","spock"])
-    print("La máquina eligió:", pc)
-
-    if eleccion == pc:
-        print("Empate")
-
-    elif eleccion == "piedra" and (pc == "tijeras" or pc == "lagarto"):
-        print("Ganaste esta mano")
-        jugador += 1
-    elif eleccion == "papel" and (pc == "piedra" or pc == "spock"):
-        print("Ganaste esta mano")
-        jugador += 1
-    elif eleccion == "tijeras" and (pc == "papel" or pc == "lagarto"):
-        print("Ganaste esta mano")
-        jugador += 1
-    elif eleccion == "lagarto" and (pc == "spock" or pc == "papel"):
-        print("Ganaste esta mano")
-        jugador += 1
-    elif eleccion == "spock" and (pc == "tijeras" or pc == "piedra"):
-        print("Ganaste esta mano")
-        jugador += 1
-    else:
-        print("Gana la máquina esta mano")
-        maquina += 1
-
-    print("Marcador -> Tú:", jugador, " Máquina:", maquina)
-
-if jugador == 5:
-    print("¡Felicidades, ganaste la partida!")
-else:
-    print("La máquina ganó la partida :(")
+j1 = input("Di la elección del jugador 1: ").lower()
+j2 = input("Di la elección del jugador 2: ").lower()
+match j1:
+    case "piedra":
+        res = ("Gana jugador 1" if j2 in ['lagarto', 'tijeras' ] else
+        "Gana jugador 2" if j2 in ['papel', 'spock'] else
+        "Empate")
+    
+    case "papel":
+        res = ("Gana jugador 1" if j2 in ['piedra', 'spock' ] else
+        "Gana jugador 2" if j2 in ['tijera', 'lagarto'] else
+        "Empate")
+    case "tijera":
+        res = ("Gana jugador 1" if j2 in ['papel', 'lagarto' ] else
+        "Gana jugador 2" if j2 in ['piedra', 'spock'] else
+        "Empate")
+    case "lagarto":
+        res = ("Gana jugador 1" if j2 in ['spock', 'papel' ] else
+        "Gana jugador 2" if j2 in ['piedra', 'tijera'] else
+        "Empate")
+    case "spock":
+        res = ("Gana jugador 1" if j2 in ['tijera', 'piedra' ] else
+        "Gana jugador 2" if j2 in ['papel', 'lagarto'] else
+        "Empate")
+    case _:
+        res = "Elección no válida"
+print(res)
