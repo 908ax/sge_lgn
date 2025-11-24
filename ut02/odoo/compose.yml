@@ -1,63 +1,25 @@
-version: "3.9"
-
 services:
-
-  postgres_dev:
+  postgres:
     image: postgres:14
-    container_name: postgres_dev
+    container_name: db
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: odoo
-      POSTGRES_PASSWORD: odoo
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=paso
     volumes:
-      - "C:/Users/leonb/OdooDesarrollo/OdooDesarrollo/dataPG:/var/lib/postgresql/data"
-    networks:
-      - shared_network
-
-  odoo_dev:
+      - ./dataPG:/var/lib/postgresql/data
+  odoo:
     image: odoo:16
-    container_name: odoo_dev
-    depends_on:
-      - postgres_dev
+    container_name: odoo_16
     environment:
-      HOST: postgres_dev
-      USER: odoo
-      PASSWORD: odoo
+      - HOST=postgres
+      - USER=odoo
+      - PASSWORD=paso
     ports:
-      - "8070:8069"
+      - '8069:8069'
     volumes:
-      - "C:/Users/leonb/OdooDesarrollo/OdooDesarrollo/volumesOdoo/addons:/mnt/extra-addons"
-      - "C:/Users/leonb/OdooDesarrollo/OdooDesarrollo/volumesOdoo/filestore:/var/lib/odoo/filestore"
-      - "C:/Users/leonb/OdooDesarrollo/OdooDesarrollo/volumesOdoo/sessions:/var/lib/odoo/sessions"
+      - ./volumesOdoo/addons:/mnt/extra-addons
+      - ./volumesOdoo/filestore:/var/lib/odoo/filestore
+    depends_on:
+      - postgres
     command: --dev=all
-    networks:
-      - shared_network
-
-  postgres_prod:
-    image: postgres:14
-    container_name: postgres_prod
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: odoo
-      POSTGRES_PASSWORD: odoo
-    networks:
-      - shared_network
-
-  odoo_prod:
-    image: odoo:16
-    container_name: odoo_prod
-    depends_on:
-      - postgres_prod
-    environment:
-      HOST: postgres_prod
-      USER: odoo
-      PASSWORD: odoo
-    ports:
-      - "8096:8069"
-    volumes:
-      - "C:/Users/leonb/OdooDesarrollo/OdooDesarrollo/volumesOdoo/addons:/mnt/extra-addons"
-    networks:
-      - shared_network
-
-networks:
-  shared_network:

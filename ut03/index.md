@@ -25,6 +25,30 @@ Le damos a Enviar e Imprimir.
 https://educajcyl-my.sharepoint.com/:b:/g/personal/leon_garnav_educa_jcyl_es/IQDnHW3puKtdQ7HcQA5WEPgYAUUG730-S1OdSstd_SI0p24?e=SV8EJb
 ```
 
+## Ejercicio paso a paso
+```
+PR0302: Facturas con Odoo
+
+1.- En primer lugar entramos a odoo a través de Docker Desktop encendiendo nuestros contenedores y usando una de los enlaces que nos dan al encender la maquina. 
+
+2.- En Inventario vamos a Productos y en Favoritos seleccionamos Importar registros para seleccionar nuestro archivo con los productos, rellenamos algunos campos y guardamos.
+
+3.- Ahora vamos a obtener una API Key en Google API para gestionar todo lo que hagamos con
+las APIs de Google, tras registrarnos con una cuenta de Google seleccionamos Crear proyecto, poniendo el nombre que queramos y dandole a Crear, en Credenciales -> Crear credenciales -> 
+Clave de API esto nos generara una API que guardaremos para más adelante, nos dirigimos a Biblioteca y allí buscamos Custom Search API y lo habilitamos.
+
+4.- Nos dirigimos a Google Programmable Search Dashboard, Get Started, le ponemos un nombre 
+dejamos puesto Buscar en toda la Web, Búsqueda por imágenes, Búsqueda segura, y No soy un Robot,
+vamos a Personalizar y copiamos el ID del buscador.
+
+5.- En Odoo nos vamos a Ajustes y en Integraciones seleccionamos Google Imágenes, le damos a Guardar y nos deberían salir los campos donde ponemos el ID del buscador y la API key.
+
+6.- Ahora en Inventario en Productos al seleccionar un producto en Acción nos saldra Obtener 
+Imágenes de Google Imágenes, con lo que ya nos saldrían las imágenes de los productos.
+
+https://educajcyl-my.sharepoint.com/:b:/g/personal/leon_garnav_educa_jcyl_es/IQDnHW3puKtdQ7HcQA5WEPgYAUUG730-S1OdSstd_SI0p24?e=SV8EJb
+```
+
 ## compose.yml
 ```
 version: "3.9"
