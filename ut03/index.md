@@ -49,8 +49,7 @@ Imágenes de Google Imágenes, con lo que ya nos saldrían las imágenes de los 
 https://educajcyl-my.sharepoint.com/:b:/g/personal/leon_garnav_educa_jcyl_es/IQDnHW3puKtdQ7HcQA5WEPgYAUUG730-S1OdSstd_SI0p24?e=SV8EJb
 ```
 
-## Captura
-![](ut03\Captura de pantalla (339).png)
+![Captura](ut03\inventario.png)
 
 
 

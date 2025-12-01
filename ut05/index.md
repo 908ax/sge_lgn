@@ -1,6 +1,6 @@
 # [UT05](./index.md)
 
-## Ejercicio paso a paso
+## PR0501: Creación de un módulo básico
 ```
 PR0501: Creación de un módulo básico 
 
@@ -9,6 +9,8 @@ PR0501: Creación de un módulo básico
 2.- En reservas_salas vamos a __manifest__.py y modificamos su código. En models -> models.py
 modificamos su código y en views -> views.py modificamos su código.
 ```
+
+![Captura](ut05\salas.png)
 
 ## Codigo 501
 ```
@@ -128,4 +130,157 @@ views.py
 
   </data>
 </odoo>
+```
+
+## PR0502: Módulo con dos modelos
+
+
+
+![Captura](ut05\biblioteca.png)
+
+## Codigo 502
+```
+library_book.py
+from odoo import models, fields
+
+class LibraryBook(models.Model):
+    _name = 'library.book'
+    _description = 'Libro'
+
+    name = fields.Char(string='Nombre', required=True)
+    author = fields.Text(string='Autor')
+    publish_date = fields.Date(string='Fecha de publicación')
+    isbn = fields.Char(string='ISBN')
+    synopsis = fields.Text(string='Sinopsis')
+
+
+library_author.py
+
+from odoo import models, fields
+
+class LibraryAuthor(models.Model):
+    _name = 'library.author'
+    _description = 'Autor de Libros'
+
+    name = fields.Char(string='Nombre', required=True)
+    birthdate = fields.Date(string='Fecha de nacimiento')
+    biography = fields.Text(string='Biografía')
+    books = fields.Text(string='Libro')
+
+
+models/__init__.py
+
+from . import library_author
+from . import library_book
+
+
+__manifest__.py
+
+{
+    'name': 'Gestión Biblioteca',
+    'version': '1.0',
+    'depends': ['base'],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/library_menu_views.xml',
+        'views/library_author_views.xml',
+        'views/library_book_views.xml',
+    ],
+    'application': True,
+}
+
+
+library_author_views.xml
+<odoo>
+    <data>
+        <record id="view_library_author_form" model="ir.ui.view">
+            <field name="name">library.author.form</field>
+            <field name="model">library.author</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="birthdate"/>
+                            <field name="biography"/>
+                            <field name="books"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_library_authors" model="ir.actions.act_window">
+            <field name="name">Autores</field>
+            <field name="res_model">library.author</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+    </data>
+</odoo>
+
+
+library_book_views.xml
+
+<odoo>
+    <data>
+        <record id="view_library_book_form" model="ir.ui.view">
+            <field name="name">library.book.form</field>
+            <field name="model">library.book</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="author"/>
+                            <field name="publish_date"/>
+                            <field name="isbn"/>
+                            <field name="synopsis"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_library_books" model="ir.actions.act_window">
+            <field name="name">Libros</field>
+            <field name="res_model">library.book</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+    </data>
+</odoo>
+
+
+library_menu_views.xml
+
+<odoo>
+    <menuitem id="library_menu_root" name="Gestion Biblioteca"/>
+
+    <record id="action_library_authors" model="ir.actions.act_window">
+      <field name="name">Autores</field>
+      <field name="res_model">library.author</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="library_menu_authors" name="Autores"
+              parent="library_menu_root" action="action_library_authors"/>
+
+    <record id="action_library_books" model="ir.actions.act_window">
+        <field name="name">Libros</field>
+        <field name="res_model">library.book</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="library_menu_books" name="Libros"
+              parent="library_menu_root" action="action_library_books"/>
+</odoo>
+
+
+ir.model.access.csv
+
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_library_author,access_library_author,model_library_author,base.group_user,1,1,1,1
+access_library_book,access_library_book,model_library_book,base.group_user,1,1,1,1
+
+
+
 ```
