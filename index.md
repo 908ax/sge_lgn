@@ -1,4 +1,4 @@
-#sge_lgn
+# sge_lgn
 
 [UT02: Instalación y configuración de sistemas ERP-CRM](ut02\odoo\index.md)
 
