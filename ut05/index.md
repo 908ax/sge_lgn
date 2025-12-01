@@ -10,7 +10,7 @@ PR0501: Creación de un módulo básico
 modificamos su código y en views -> views.py modificamos su código.
 ```
 
-![Captura](ut05\salas.png)
+![Captura](ut05/salas.png)
 
 ## Codigo 501
 ```
@@ -133,10 +133,16 @@ views.py
 ```
 
 ## PR0502: Módulo con dos modelos
+```
+1.-
+
+2.-
+
+3.-
+```
 
 
-
-![Captura](ut05\biblioteca.png)
+![Captura](ut05/biblioteca.png)
 
 ## Codigo 502
 ```
