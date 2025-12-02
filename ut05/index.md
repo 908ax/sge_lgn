@@ -10,7 +10,7 @@ PR0501: Creación de un módulo básico
 modificamos su código y en views -> views.py modificamos su código.
 ```
 
-![Captura](ut05/salas.png)
+![alt text](salas.png)
 
 ## Codigo 501
 ```
@@ -134,15 +134,22 @@ views.py
 
 ## PR0502: Módulo con dos modelos
 ```
-1.-
+PR0502: Módulo con dos modelos
 
-2.-
+1.- En Docker Desktop en la terminal vamos a la carpeta volumesOdoo y ejecutamos docker exec -ti odoo_prod bash y luego odoo scaffold gestion_biblioteca mnt/extra-addons para crear gestion_biblioteca.
 
-3.-
+2.- En gestion_biblioteca vamos a __manifest__.py y modificamos su código, para ponerle el titulo y ponerle en data los xml que crearemos.
+
+3.- En models -> __init__.py en vez de que importe models ponemos dos import de library_book y library_author.
+
+4.- En models creamos library_author.py y library_book.py y los rellenamos como si fueran models pero personalizados para que cumplan con nuestros objetivos.
+
+5.- En security ir.model.access.csv, añadimos dos lineas como esta access_library_book,access_library_book,model_library_book,base.group_user,1,1,1,1, para que nos coja nuestros modelos.
+
+6.- En views creamos library_author_views.xml, library_book_views.xml y library_menu_views.xml, para crear la vista de gestion_biblioteca, con los id coincidiendo con los de models.
 ```
 
-
-![Captura](ut05/biblioteca.png)
+![alt text](biblioteca.png)
 
 ## Codigo 502
 ```
