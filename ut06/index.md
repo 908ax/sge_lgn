@@ -9,7 +9,7 @@ PR0601: Campos del modelo
 2.- En gestion_productos vamos a __manifest__.py y modificamos su código. En models -> models.py
 modificamos su código y en views -> views.py modificamos su código.
 ```
-
+![Imagen](image.png)
 
 ## Codigo 601
 ```
@@ -43,46 +43,62 @@ models.py
 
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields
 
 
 class GestionProductos(models.Model):
     _name = 'gestion_productos.gestion_productos'
-    _description = 'gestion_productos.gestion_productos'
+    _description = 'Gestión de Productos'
 
-    nombre = fields.Char()
-    descripcion = fields.Char()
+    nombre = fields.Char(string="Nombre", required=True)
+    descripcion = fields.Char(string="Descripción")
+
     codProducto = fields.Integer(
-    required=True
+        string="Código de Producto",
+        required=True
     )
-    imaProducto = fields.Image()
+
+    imaProducto = fields.Image(string="Imagen")
 
     categoria = fields.Selection([
         ('jardin', 'Jardín'),
         ('hogar', 'Hogar'),
         ('electrodomesticos', 'Electrodomésticos')
-    ])
-    tipoProducto = fields.Boolean()
-    
-    precVenta = fields.Monetary()
-    stockDisponible = fields.Int()
-    
-    fechCreacion = fields.Date()
-    fechUltAct = fields.Date()
-    
-    activo = fields.Boolean(
-    default=True
-    )
-    peso = fields.Float()
+    ], string="Categoría")
 
+    tipoProducto = fields.Boolean(string="Tipo de Producto")
+
+    currency_id = fields.Many2one(
+        'res.currency',
+        string='Moneda',
+        required=True,
+        default=lambda self: self.env.company.currency_id
+    )
+
+    precVenta = fields.Monetary(
+        string="Precio de Venta",
+        currency_field='currency_id'
+    )
+
+    stockDisponible = fields.Integer(string="Stock Disponible")
+
+    fechCreacion = fields.Date(string="Fecha de Creación")
+    fechUltAct = fields.Date(string="Fecha Última Actualización")
+
+    activo = fields.Boolean(
+        string="Activo",
+        default=True
+    )
+
+    peso = fields.Float(string="Peso")
 
 
 views.py
 
 <odoo>
   <data>
-    <!-- explicit list view definition -->
 
+    <!-- LIST VIEW -->
     <record model="ir.ui.view" id="gestion_productos.list">
       <field name="name">gestion_productos list</field>
       <field name="model">gestion_productos.gestion_productos</field>
@@ -91,75 +107,31 @@ views.py
           <field name="nombre"/>
           <field name="descripcion"/>
           <field name="codProducto"/>
-          <field name="imaProducto"/>
-          
           <field name="categoria"/>
-          <field name="tipoProducto"/>
-          
           <field name="precVenta"/>
           <field name="stockDisponible"/>
-          
-          <field name="fechCreacion"/>
-          <field name="fechUltAct"/>
-          
           <field name="activo"/>
-          <field name="peso"/>
         </tree>
       </field>
     </record>
 
-
-    <!-- actions opening views on models -->
-
+    <!-- ACTION -->
     <record model="ir.actions.act_window" id="gestion_productos.action_window">
-      <field name="name">gestion_productos window</field>
+      <field name="name">Productos</field>
       <field name="res_model">gestion_productos.gestion_productos</field>
       <field name="view_mode">tree,form</field>
     </record>
 
-
-
-
-
-
-    <!-- server action to the one above -->
-<!--
-    <record model="ir.actions.server" id="gestion_productos.action_server">
-      <field name="name">gestion_productos server</field>
-      <field name="model_id" ref="model_gestion_productos_gestion_productos"/>
-      <field name="state">code</field>
-      <field name="code">
-        action = {
-          "type": "ir.actions.act_window",
-          "view_mode": "tree,form",
-          "res_model": model._name,
-        }
-      </field>
-    </record>
--->
-
-
-
-
-
-    <!-- Top menu item -->
-
-    <menuitem name="gestion_productos" id="gestion_productos.menu_root"/>
-
-    <!-- menu categories -->
-
-    <menuitem name="Menu 1" id="gestion_productos.menu_1" parent="gestion_productos.menu_root"/>
-    <menuitem name="Menu 2" id="gestion_productos.menu_2" parent="gestion_productos.menu_root"/>
-
-    <!-- actions -->
-
-    <menuitem name="List" id="gestion_productos.menu_1_list" parent="gestion_productos.menu_1"
+    <!-- MENUS -->
+    <menuitem name="Gestión Productos" id="gestion_productos.menu_root"/>
+    <menuitem name="Productos"
+              id="menu_productos"
+              parent="gestion_productos.menu_root"
               action="gestion_productos.action_window"/>
-    <menuitem name="Server to list" id="gestion_productos" parent="gestion_productos.menu_2"
-              action="gestion_productos.action_server"/>
 
   </data>
 </odoo>
+
 
 ```
 
@@ -175,6 +147,8 @@ PR0602: Campos del modelo
 modificamos su código, en security -> ir.model.access.csv modificamos su código.
 
 ```
+
+![Imagen](<Captura de pantalla (346).png>)
 
 ## Codigo 602
 ```
@@ -517,6 +491,8 @@ PR0602: Campos calculados y restricciones
 3.- En stock_management vamos a __manifest__.py y modificamos su código, en views vamos a views.xml y modificamos su código, en models -> __init__.py y modificamos su código, en security -> ir.model.access.csv modificamos su código.
 
 ```
+
+![Imagen](<Captura de pantalla (347).png>)
 
 ## Codigo 603
 ```
