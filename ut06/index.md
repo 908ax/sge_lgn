@@ -482,7 +482,7 @@ class LibrarySocio(models.Model):
 
 ## PR0603: Campos calculados y restricciones
 ```
-PR0602: Campos calculados y restricciones
+PR0603: Campos calculados y restricciones
 
 1.- En Docker Desktop en la terminal vamos a la carpeta volumesOdoo y ejecutamos docker exec -ti odoo_prod bash y luego odoo scaffold stock_management mnt/extra-addons para crear stock_management.
 
@@ -661,4 +661,155 @@ class stock_product(models.Model):
     def _full_name(self):
         for record in self:
             record.full_name = (record.name or "") + " (" + (record.category or "") + ")"
+```
+
+
+
+## PR0604: Vista de tipo lista
+```
+PR0604: Vista de tipo lista
+
+1.- En Docker Desktop en la terminal vamos a la carpeta volumesOdoo y ejecutamos docker exec -ti odoo_prod bash y luego odoo scaffold subscription mnt/extra-addons para crear subscription.
+
+2.- En stock_management vamos a __manifest__.py y modificamos su código, en views vamos a views.xml y modificamos su código, en models -> models.py.
+
+```
+
+![Imagen](<Captura de pantalla (348).png>)
+
+## Codigo 604
+```
+models.py
+
+# -*- coding: utf-8 -*-
+from datetime import timedelta
+from odoo import models, fields, api
+
+class Subscription(models.Model):
+    _name = 'subscription.subscription'
+    _description = 'Gestión de Suscripciones'
+    _sql_constraints = [
+        ('unique_name', 'unique(name)', 'El nombre de la suscripción debe ser único')
+    ]
+
+    name = fields.Char(string='Nombre', required=True)
+    customer_id = fields.Many2one('res.partner', required=True)
+    subscription_code = fields.Char(string='Código de Suscripción', required=True)
+    start_date = fields.Date(string='Fecha Inicio', required=True)
+    end_date = fields.Date(string='Fecha Fin')
+    duration_months = fields.Integer(string='Duración (meses)', compute='_compute_duration')
+    renewal_date = fields.Date(string='Fecha de Renovación')
+    status = fields.Selection([
+        ('active', 'Activa'),
+        ('expired', 'Vencida'),
+        ('pending', 'Pendiente'),
+        ('cancelled', 'Cancelada')
+    ], string='Estado', default='pending')
+    is_renewable = fields.Boolean(string='Renovable automáticamente')
+    auto_renewal = fields.Boolean(string='Renovación automática')
+    price = fields.Float(string='Precio')
+    usage_limit = fields.Integer(string='Límite de Uso')
+    current_usage = fields.Integer(string='Servicios Utilizados')
+    use_percent = fields.Float(string='Porcentaje de Uso', compute='_compute_use_percent')
+
+
+    @api.depends('start_date', 'end_date')
+    def _compute_duration(self):
+        for record in self:
+            if record.start_date and record.end_date:
+                record.duration_months = (record.end_date.year - record.start_date.year) * 12 + \
+                                         (record.end_date.month - record.start_date.month)
+            else:
+                record.duration_months = 0
+
+    @api.depends('current_usage', 'usage_limit')
+    def _compute_use_percent(self):
+        for record in self:
+            if record.usage_limit:
+                record.use_percent = (record.current_usage / record.usage_limit) * 100
+            else:
+                record.use_percent = 0
+
+    def aumento(self):
+        """Añade 15 días a la fecha de fin de la suscripción"""
+        for record in self:
+            if record.end_date:
+                record.end_date += timedelta(days=15)
+
+
+views.xml
+
+<odoo>
+  <data>
+    <record id="view_subscription_tree_basic" model="ir.ui.view">
+      <field name="name">subscription.tree.basic</field>
+      <field name="model">subscription.subscription</field>
+      <field name="arch" type="xml">
+        <tree string="Suscripciones" decoration-danger="status=='expired'" decoration-warning="status=='cancelled'">
+          <field name="name"/>
+          <field name="customer_id"/>
+          <field name="subscription_code"/>
+          <field name="start_date"/>
+          <field name="end_date" widget="remaining_days"/>
+          <field name="duration_months"/>
+          <field name="renewal_date"/>
+          <field name="status" widget="radio"/>
+          <field name="is_renewable"/>
+          <field name="auto_renewal"/>
+          <field name="price" attrs="{'invisible':[('status','=','cancelled')]}"/>
+          <button name="aumento" type="object" string="+15 días" class="btn-primary" icon="fa-gift"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="view_subscription_tree_usage" model="ir.ui.view">
+      <field name="name">subscription.tree.usage</field>
+      <field name="model">subscription.subscription</field>
+      <field name="arch" type="xml">
+        <tree string="Suscripciones Uso" decoration-danger="use_percent&gt;=80">
+          <field name="name"/>
+          <field name="usage_limit" widget="progressbar"/>
+          <field name="current_usage"/>
+          <field name="use_percent" avg="1"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="action_subscription_basic" model="ir.actions.act_window">
+      <field name="name">Suscripciones (Básico)</field>
+      <field name="res_model">subscription.subscription</field>
+      <field name="view_mode">tree,form</field>
+      <field name="view_id" ref="view_subscription_tree_basic"/>
+    </record>
+
+    <record id="action_subscription_usage" model="ir.actions.act_window">
+      <field name="name">Suscripciones (Uso)</field>
+      <field name="res_model">subscription.subscription</field>
+      <field name="view_mode">tree,form</field>
+      <field name="view_id" ref="view_subscription_tree_usage"/>
+    </record>
+
+    <menuitem id="menu_subscription_root" name="Suscripciones"/>
+    <menuitem id="menu_subscription_basic" name="Básico" parent="menu_subscription_root" action="action_subscription_basic"/>
+    <menuitem id="menu_subscription_usage" name="Uso" parent="menu_subscription_root" action="action_subscription_usage"/>
+  </data>
+</odoo>
+
+
+__manifest__.py
+
+{
+    'name': 'Gestión de Suscripciones',
+    'version': '1.0',
+    'category': 'Inventory',
+    'summary': 'Módulo para gestionar suscripciones',
+    'depends': ['base'],
+    'data': [
+        
+        'security/ir.model.access.csv',
+        'views/views.xml',
+    ],
+    'installable': True,
+    'application': True,
+}
 ```
