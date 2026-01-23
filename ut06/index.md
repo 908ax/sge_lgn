@@ -671,7 +671,7 @@ PR0604: Vista de tipo lista
 
 1.- En Docker Desktop en la terminal vamos a la carpeta volumesOdoo y ejecutamos docker exec -ti odoo_prod bash y luego odoo scaffold subscription mnt/extra-addons para crear subscription.
 
-2.- En stock_management vamos a __manifest__.py y modificamos su código, en views vamos a views.xml y modificamos su código, en models -> models.py.
+2.- En subscription vamos a __manifest__.py y modificamos su código, en views vamos a views.xml y modificamos su código, en models -> models.py.
 
 ```
 
@@ -812,4 +812,308 @@ __manifest__.py
     'installable': True,
     'application': True,
 }
+```
+
+
+## PR0606: Gestión de un taller mecánico
+```
+PR0606: Gestión de un taller mecánico
+
+1.- En Docker Desktop en la terminal vamos a la carpeta volumesOdoo y ejecutamos docker exec -ti odoo_prod bash y luego odoo scaffold taller_mecanico mnt/extra-addons para crear taller_mecanico.
+
+2.- En taller_mecanico vamos a models/ y creamos cliente.py, pieza.py, reparacion.py y vehiculo.py y modificamos __init__.py, en views/ creamos menu.xml, cliente.xml, pieza.xml, reparacion.xml y vehiculo.xml y entramos en security/ ir.model.access.csv modificamos su código, entramos en __manifest__.py y modificamos su código.
+
+```
+
+![Imagen](<Captura de pantalla (358).png>)
+
+## Codigo 606
+```
+__init__.py
+
+# -*- coding: utf-8 -*-
+
+from . import cliente
+from . import vehiculo
+from . import reparacion
+from . import pieza
+
+
+cliente.py
+
+from odoo.exceptions import ValidationError
+from odoo import models, fields, api
+
+
+class cliente(models.Model):
+    _name = 'taller.cliente'
+    _description = 'taller.cliente'
+    _sql_constraints=[]
+
+    name = fields.Char()
+    telefono = fields.Integer()
+    email = fields.Char()
+    direccion = fields.Char()
+
+    vehiculo_id = fields.One2many(comodel_name='taller.vehiculo', inverse_name='cliente_id')
+
+
+pieza.py
+
+from odoo.exceptions import ValidationError
+from odoo import models, fields, api
+
+
+class pieza(models.Model):
+    _name = 'taller.pieza'
+    _description = 'taller.pieza'
+    _sql_constraints=[]
+
+    nombre = fields.Char()
+    codigo = fields.Integer()
+    precio_unitario = fields.Integer(string='Precio')
+
+    reparacion_id = fields.Many2many('taller.reparacion')
+
+    @api.constrains('precio_unitario')
+    def _price(self):
+        for record in self:
+            if record.precio_unitario < 0:
+                raise ValidationError('El precio debe ser > 0')
+
+
+reparacion.py
+
+from odoo.exceptions import ValidationError
+from odoo import models, fields, api
+
+
+class reparacion(models.Model):
+    _name = 'taller.reparacion'
+    _description = 'taller.reparacion'
+    _sql_constraints=[]
+
+    fecha_inicio = fields.Date()
+    fecha_fin = fields.Date()
+    descripcion = fields.Char()
+    estado = fields.Selection([
+        ('borrador', 'Borrador'),
+        ('en_curso', 'En curso'),
+        ('finalizada', 'Finalizada')
+    ])
+    coste_total = fields.Integer()
+
+    vehiculo_id = fields.Many2one(comodel_name='taller.vehiculo')
+    pieza_id = fields.Many2many('taller.pieza')
+    tecnico_id = fields.Many2one('res.users')
+
+    def action_abrir(self):
+        self.estado = 'en_curso'
+
+    def action_cerrar(self):
+        self.estado = 'finalizada'
+
+    def action_reabrir(self):
+        self.estado = 'borrador'
+
+
+vehiculo.py
+
+from odoo.exceptions import ValidationError
+from odoo import models, fields, api
+
+
+class vehiculo(models.Model):
+    _name = 'taller.vehiculo'
+    _description = 'taller.vehiculo'
+    _sql_constraints=[]
+
+    matricula = fields.Char()
+    marca = fields.Char()
+    modelo = fields.Char()
+    anio = fields.Integer()
+
+    cliente_id = fields.Many2one(comodel_name='taller.cliente')
+    reparacion_id = fields.One2many(comodel_name='taller.reparacion', inverse_name='vehiculo_id')
+
+
+ir.model.access.csv
+
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_taller_cliente,taller.cliente,model_taller_cliente,base.group_user,1,1,1,1
+access_taller_vehiculo,taller.vehiculo,model_taller_vehiculo,base.group_user,1,1,1,1
+access_taller_reparacion,taller.reparacion,model_taller_reparacion,base.group_user,1,1,1,1
+access_taller_pieza,taller.pieza,model_taller_pieza,base.group_user,1,1,1,1
+
+
+cliente.xml
+
+<odoo>
+  <data>
+    <record id="view_cliente_tree" model="ir.ui.view">
+      <field name="name">taller.cliente.tree</field>
+      <field name="model">taller.cliente</field>
+      <field name="arch" type="xml">
+        <tree string="Clientes">
+          <field name="name"/>
+          <field name="telefono"/>
+          <field name="email"/>
+          <field name="direccion"/>
+          <field name="vehiculo_id"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="action_cliente" model="ir.actions.act_window">
+      <field name="name">Clientes</field>
+      <field name="res_model">taller.cliente</field>
+      <field name="view_mode">tree,form</field>
+      <field name="view_id" ref="view_cliente_tree"/>
+    </record>
+  </data>
+</odoo>
+
+
+menu.xml
+
+<odoo>
+  <data>
+    <menuitem id="menu_taller_root" name="Taller Mecánico"/>
+
+    <menuitem id="menu_clientes" name="Clientes" parent="menu_taller_root" action="action_cliente"/>
+    <menuitem id="menu_vehiculos" name="Vehículos" parent="menu_taller_root" action="action_vehiculo"/>
+    <menuitem id="menu_reparaciones" name="Reparaciones" parent="menu_taller_root" action="action_reparacion"/>
+    <menuitem id="menu_piezas" name="Piezas" parent="menu_taller_root" action="action_pieza"/>
+  </data>
+</odoo>
+
+
+piezas.xml
+
+<odoo>
+  <data>
+    <record id="view_pieza_tree" model="ir.ui.view">
+      <field name="name">taller.pieza.tree</field>
+      <field name="model">taller.pieza</field>
+      <field name="arch" type="xml">
+        <tree string="Piezas" decoration-success="precio_unitario&lt;10" decoration-danger="precio_unitario&gt;100">
+          <field name="nombre"/>
+          <field name="codigo"/>
+          <field name="precio_unitario"/>
+          <field name="reparacion_id"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="action_pieza" model="ir.actions.act_window">
+      <field name="name">Piezas</field>
+      <field name="res_model">taller.pieza</field>
+      <field name="view_mode">tree,form</field>
+      <field name="view_id" ref="view_pieza_tree"/>
+    </record>
+  </data>
+</odoo>
+
+
+reparacion.xml
+
+<odoo>
+  <data>
+    <record id="view_reparacion_tree" model="ir.ui.view">
+      <field name="name">taller.reparacion.tree</field>
+      <field name="model">taller.reparacion</field>
+      <field name="arch" type="xml">
+        <tree string="Reparaciones"
+              editable="bottom"
+              decoration-muted="estado=='borrador'"
+              decoration-info="estado=='en_curso'"
+              decoration-success="estado=='finalizada'">
+
+          <field name="fecha_inicio" attrs="{'readonly':[('estado','=','finalizada')]}"/>
+          <field name="fecha_fin" attrs="{'readonly':[('estado','=','finalizada')]}"/>
+          <field name="descripcion" attrs="{'readonly':[('estado','=','finalizada')]}"/>
+          <field name="estado" attrs="{'readonly':[('estado','=','finalizada')]}"/>
+          <field name="coste_total" attrs="{'readonly':[('estado','=','finalizada')]}"/>
+          <field name="vehiculo_id" attrs="{'readonly':[('estado','=','finalizada')]}"/>
+          <field name="pieza_id" attrs="{'readonly':[('estado','=','finalizada')]}"/>
+          <field name="tecnico_id" attrs="{'readonly':[('estado','=','finalizada')]}"/>
+
+          <button name="action_abrir" type="object" string="Abrir reparación" class="btn-primary"
+                  attrs="{'invisible':[('estado','!=','borrador')]}"/>
+          <button name="action_cerrar" type="object" string="Cerrar reparación" class="btn-success"
+                  attrs="{'invisible':[('estado','!=','en_curso')]}"/>
+          <button name="action_reabrir" type="object" string="Reabrir" class="btn-warning"
+                  attrs="{'invisible':[('estado','!=','finalizada')]}"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="action_reparacion" model="ir.actions.act_window">
+      <field name="name">Reparaciones</field>
+      <field name="res_model">taller.reparacion</field>
+      <field name="view_mode">tree</field>
+      <field name="view_id" ref="view_reparacion_tree"/>
+    </record>
+  </data>
+</odoo>
+
+
+vehiculo.xml
+
+<odoo>
+  <data>
+    <record id="view_vehiculo_tree" model="ir.ui.view">
+      <field name="name">taller.vehiculo.tree</field>
+      <field name="model">taller.vehiculo</field>
+      <field name="arch" type="xml">
+        <tree string="Vehículos">
+          <field name="matricula"/>
+          <field name="marca"/>
+          <field name="modelo"/>
+          <field name="anio"/>
+          <field name="cliente_id"/>
+          <field name="reparacion_id"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="action_vehiculo" model="ir.actions.act_window">
+      <field name="name">Vehículos</field>
+      <field name="res_model">taller.vehiculo</field>
+      <field name="view_mode">tree,form</field>
+      <field name="view_id" ref="view_vehiculo_tree"/>
+    </record>
+  </data>
+</odoo>
+
+
+__manifest__.py
+
+# -*- coding: utf-8 -*-
+{
+    'name': "Taller Mecánico",
+    'summary': "Gestión de clientes, vehículos, reparaciones y piezas",
+    'description': """
+        Módulo para gestionar clientes, vehículos, reparaciones y piezas en un taller mecánico.
+    """,
+    'author': "My Company",
+    'website': "https://www.yourcompany.com",
+    'category': 'Services',
+    'version': '0.1',
+    'depends': ['base'],
+    'application': True,
+    'installable': True,
+    'data': [
+        'views/cliente.xml',
+        'security/ir.model.access.csv',
+        'views/vehiculo.xml',
+        'views/reparacion.xml',
+        'views/piezas.xml',
+        'views/menu.xml',
+    ],
+    'demo': [
+        'demo/demo.xml',
+    ],
+}
+
 ```
